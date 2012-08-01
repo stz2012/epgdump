@@ -68,7 +68,6 @@ static STATION csSta[] = {
 	{ "アニマルプラネット", "1193.ontvjapan.com", 28768, 7, 341},
 /* ND8 */
 	{ "ショップチャンネル", "1059.ontvjapan.com", 24704, 6, 55},
-	{ "キッズステーションＨＤ", "1045.ontvjapan.com", 24704, 6, 335},
 /* ND10 */
 	{ "スカチャン０ＨＤ", "800ch.epgdata.ontvjapan", 24736, 6, 800},
 	{ "スカチャン１ＨＤ", "801ch.epgdata.ontvjapan", 24736, 6, 801},
@@ -77,6 +76,7 @@ static STATION csSta[] = {
 /* ND12 */
 	{ "ＭＴＶ", "1019.ontvjapan.com", 28864, 7, 323},
 	{ "ミュージック・エア", "1024.ontvjapan.com", 28864, 7, 324},
+	{ "キッズステーションＨＤ", "1045.ontvjapan.com", 28864, 7, 330},
 	{ "ＢＢＣワールドニュース", "1070.ontvjapan.com", 28864, 7, 353},
 	{ "ＣＮＮｊ", "1069.ontvjapan.com", 28864, 7, 354},
 /* ND14 */
