@@ -202,8 +202,10 @@ retry:
 			pk.payloadlen -= 1;
 		}
 		memset(pk.payload, 0xFF, sizeof(pk.payload));
+		if(pk.payloadlen > sizeof(pk.payload))
+			continue;
 		memcpy(pk.payload, payptr, pk.payloadlen);
-    
+
 		/*
 		  if(pk.rcount == 62) {
 		  printf("62\n");
@@ -306,6 +308,11 @@ unsigned int CalcCrc(unsigned int crc, unsigned char *buf, int len) {
 
 
 int checkcrc(SECcache *secs) {
+
+	/* regard a section with more than MAXSECLEN data as an error. */
+	if(secs->seclen > MAXSECLEN) {
+		return 0;
+	}
 
 	/* セクションの終りに置かれる4バイトのCRC32は、
 	   CRC計算の結果0になるように設定される。
