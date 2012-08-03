@@ -78,7 +78,7 @@ void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)
 
 	if(top->next == NULL){
 		top->next = sdtptr ;
-		top->prev = top ;
+		sdtptr->prev = top ;
 		return ;
 	}
 	cur = top->next ;
@@ -132,7 +132,7 @@ void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 			svtptr->transport_stream_id = sdth.transport_stream_id;
 			svtptr->service_id = sdtb.service_id;
 			memcpy(svtptr->service_name, desc.service_name, strlen(desc.service_name));
-			if (desc.service_type == 1)
+			if (sdtb.service_id > 0 && desc.service_type == 1)
 				enqueue_sdt(top, svtptr);
 #if 0
 			printf("SDT=%s,%d,%x,%x,%x,%x,%x,%x,%x\n",

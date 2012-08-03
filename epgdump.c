@@ -51,15 +51,9 @@ void	GetStation(STATION **station, int * station_count, char *header)
 	char sid[80];
 	int stationi = *station_count;
 
-	svtcur=svttop->next;
+	svtcur = svttop->next;
 	while(svtcur != NULL) {
 		sprintf(sid, "%s_%d", header, svtcur->service_id);
-		for (int i=0; i<stationi; i++) {
-			if ( !strcmp( pStation[i].ontv, sid ) ) {
-				// 既に同じものが含まれるのでスキップ
-				break;
-			}
-		}
 		pStation = realloc(pStation, (stationi + 1) * sizeof(STATION));
 		memset(&pStation[stationi], 0, sizeof(STATION));
 
@@ -73,7 +67,7 @@ void	GetStation(STATION **station, int * station_count, char *header)
 		strcpy(pStation[stationi].ontv, sid);
 
 		stationi++;
-		svtcur=svtcur->next;
+		svtcur = svtcur->next;
 	}
 	*station = pStation;
 	*station_count = stationi;
