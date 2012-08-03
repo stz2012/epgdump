@@ -7,10 +7,10 @@ typedef	struct	_SVT_CONTROL	SVT_CONTROL;
 struct	_SVT_CONTROL{
 	SVT_CONTROL	*next ;
 	SVT_CONTROL	*prev ;
-	int		event_id ;			// イベントID
-	int		original_network_id ;			// OriginalNetworkID
-	int		transport_stream_id ;			// TransporrtStreamID
-	char	servicename[MAXSECLEN] ;		// サービス名
+	int		original_network_id ;		// OriginalNetworkID
+	int		transport_stream_id ;		// TransporrtStreamID
+	int		service_id ;				// ServiceID
+	char	service_name[MAXSECLEN] ;	// サービス名
 };
 
 typedef	struct	_EIT_CONTROL	EIT_CONTROL;

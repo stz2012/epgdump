@@ -64,7 +64,7 @@ int		serachid(SVT_CONTROL *top, int service_id)
 {
 	SVT_CONTROL	*cur = top ;
 	while(cur != NULL){
-		if(cur->event_id == service_id){
+		if(cur->service_id == service_id){
 			return 1 ;
 		}
 		cur = cur->next ;
@@ -83,7 +83,7 @@ void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)
 	}
 	cur = top->next ;
 	while(cur != NULL){
-		if(sdtptr->event_id < cur->event_id){
+		if(sdtptr->service_id < cur->service_id){
 			if(cur->prev != NULL){
 				cur->prev->next = sdtptr ;
 				sdtptr->prev = cur->prev ;
@@ -128,12 +128,12 @@ void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 		rc = serachid(top, sdtb.service_id);
 		if(rc == 0){
 			svtptr = calloc(1, sizeof(SVT_CONTROL));
-			svtptr->event_id = sdtb.service_id;
 			svtptr->original_network_id = sdth.original_network_id;
 			svtptr->transport_stream_id = sdth.transport_stream_id;
-			svtptr->event_id = sdtb.service_id;
-			memcpy(svtptr->servicename, desc.service_name, strlen(desc.service_name));
-			enqueue_sdt(top, svtptr);
+			svtptr->service_id = sdtb.service_id;
+			memcpy(svtptr->service_name, desc.service_name, strlen(desc.service_name));
+			if (desc.service_type == 1)
+				enqueue_sdt(top, svtptr);
 #if 0
 			printf("SDT=%s,%d,%x,%x,%x,%x,%x,%x,%x\n",
 				desc.service_name, sdtb.service_id, sdtb.reserved_future_use1,
