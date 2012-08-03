@@ -191,7 +191,6 @@ int main(int argc, char *argv[])
 	FILE *outfile = stdout;
 	char	*arg_onTV ;
 	int		staCount ;
-	char *file;
 	int   inclose = 0;
 	int   outclose = 0;
 	SECcache   secs[SECCOUNT];
@@ -201,26 +200,34 @@ int main(int argc, char *argv[])
 
 	if(argc == 4){
 		arg_onTV = argv[1];
-		file = argv[2];
-		if(strcmp(file, "-")) {
-			infile = fopen(file, "r");
+		if(strcmp(argv[2], "-")) {
+			infile = fopen(argv[2], "r");
+			if ( !infile) {
+			  printf( "tsFile not found (Can't open file: %s)\n", argv[2] );
+			  exit( -1 );
+			}
 			inclose = 1;
+		}
+		else {
+			infile = stdin;
 		}
 		if(strcmp(argv[3], "-")) {
 			outfile = fopen(argv[3], "w+");
+			if ( !outfile) {
+			  printf( "xmlFile not found (Can't open file: %s)\n", argv[3] );
+			  exit( -1 );
+			}
 			outclose = 1;
 		}
+		else {
+			outfile = stdout;
+		}
 	}else{
-		fprintf(stdout, "Usage : %s {/BS|/CS} <tsFile> <outfile>\n", argv[0]);
-		fprintf(stdout, "Usage : %s <ontvcode> <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s {/BS|/CS|<id>} <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "\n");
-		fprintf(stdout, "  ontvcode   Channel identifier (ex. ****.ontvjapan.com)\n");
-		fprintf(stdout, "  /BS        BS mode\n");
-		fprintf(stdout, "               This mode reads the data of all BS TV stations\n");
-		fprintf(stdout, "               from one TS data.\n");
-		fprintf(stdout, "  /CS        CS mode\n");
-		fprintf(stdout, "               This mode reads the data of two or more CS TV stations\n");
-		fprintf(stdout, "               from one TS data.\n");
+		fprintf(stdout, "id       チャンネル識別子。地上波の物理チャンネルを与えます。\n");
+		fprintf(stdout, "/BS      BSモード。一つのTSからBS全局のデータを読み込みます。\n");
+		fprintf(stdout, "/CS      CSモード。一つのTSから複数局のデータを読み込みます。\n");
 		return 0;
 	}
 
