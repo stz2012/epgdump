@@ -40,8 +40,8 @@ static char *getTP(int tsid) {
 		/* BS */
 		case 16400: ret = "B1"; break;		//BS朝日
 		case 16401: ret = "B2"; break;		//BS-TBS
-		case 16433: ret = "B3"; break;		//BSジャパン
-		case 16432: ret = "B4"; break;		//WOWOWプライム
+		case 16432: ret = "B3"; break;		//WOWOWプライム
+		case 16433: ret = "B4"; break;		//BSジャパン
 		case 17488: ret = "B5"; break;		//WOWOWライブ
 		case 17489: ret = "B6"; break;		//WOWOWシネマ
 		case 17520: ret = "B7"; break;		//スターチャンネル2/3
