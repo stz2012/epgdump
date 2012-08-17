@@ -17,13 +17,17 @@ Linux版を改造したものをベースにxmltv用のxmlファイルを作成します。
 
 使用方法は以下の通りです。
 
-Usage : ./epgdump /BS <tsFile> <outfile>
-Usage : ./epgdump <ontvcode> <tsFile> <outfile>
-ontvcode チャンネル識別子。****.ontvjapan.com など
+Usage : ./epgdump {/BS|/CS|<id>} <tsFile> <outfile>
+id       チャンネル識別子。地上波の物理チャンネルを与えます。
 /BS      BSモード。一つのTSからBS全局のデータを読み込みます。
 /CS      CSモード。一つのTSから複数局のデータを読み込みます。
 
 makeするとepgdumpがビルドされます。
+
+Makefile中の
+RECPT1     = -DRECPT1
+をコメントアウトせずにビルドした場合
+recpt1対応版としてコンパイルされます。
 
 epgdumpライセンス(Solaris版より引用):
 >epgdumpに関しては、BonTest Ver.1.40からそのままソースを持ってきている部分も

@@ -254,7 +254,17 @@ int main(int argc, char *argv[])
 		strcpy(ServiceName, pStas[lp].name);
 		xmlspecialchars(ServiceName);
 
+#ifdef RECPT1
+		if(strcmp(ontvheader, "BS") == 0){
+			fprintf(outfile, "  <channel id=\"%s\" tp=\"%d\">\n", pStas[lp].ontv, pStas[lp].svId);
+		}else if(strcmp(ontvheader, "CS") == 0){
+			fprintf(outfile, "  <channel id=\"%s\" tp=\"%s\">\n", pStas[lp].ontv, pStas[lp].tpnm);
+		}else{
+			fprintf(outfile, "  <channel id=\"%s\" tp=\"%s\">\n", pStas[lp].ontv, arg_onTV);
+		}
+#else
 		fprintf(outfile, "  <channel id=\"%s\" tp=\"%s\">\n", pStas[lp].ontv, (strcmp(ontvheader, "GR") == 0) ? arg_onTV : pStas[lp].tpnm);
+#endif /* defined(RECPT1) */
 		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
 		fprintf(outfile, "    <transport_stream_id>%d</transport_stream_id>\n", pStas[lp].tsId);
 		fprintf(outfile, "    <original_network_id>%d</original_network_id>\n", pStas[lp].onId);
