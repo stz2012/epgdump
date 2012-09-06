@@ -1,6 +1,10 @@
-xmltv-epg
-
+【epgdump + α（STZ版）】
 MPEG-TSに含まれるepgをxmlで出力するプログラムです。
+こちらは亜流版ですのでご注意下さい。
+
+※このプログラムは以下のシステムとの組み合わせを想定したものです。
+epgrec STZ版：https://github.com/stz2012/epgrec/
+
 ◆N/E9PqspSk氏がrecfriio Solaris版(http://2sen.dip.jp/cgi-bin/friioup/source/up0737.zip)に含まれるepgdumpを
 Linux版を改造したものをベースにxmltv用のxmlファイルを作成します。
 
