@@ -28,11 +28,6 @@ id       チャンネル識別子。地上波の物理チャンネルを与えます。
 
 makeするとepgdumpがビルドされます。
 
-Makefile中の
-RECPT1     = -DRECPT1
-をコメントアウトせずにビルドした場合
-recpt1対応版としてコンパイルされます。
-
 epgdumpライセンス(Solaris版より引用):
 >epgdumpに関しては、BonTest Ver.1.40からそのままソースを持ってきている部分も
 >あるため、そのライセンスに従いします。
@@ -57,9 +52,9 @@ Special Thanks:
 ・拡張ツール中の人
 ・◆N/E9PqspSk氏
 ・ARIB(資料の無料ダウンロードに対して)
+・tomy ◆CfWlfzSGyg氏
+・2chの「Linuxでテレビ総合」スレッドの皆様
 
 動作確認環境:
-  Debian GNU/Linux sid
-  Linux 2.6.27.19 SMP PREEMPT x86_64
-
-tomy ◆CfWlfzSGyg
+  CentOS 6.3 GNU/Linux
+  Linux 2.6.32 SMP i686
