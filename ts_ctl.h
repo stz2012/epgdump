@@ -4,6 +4,8 @@
 #include	"util.h"
 
 typedef	struct	_SVT_CONTROL	SVT_CONTROL;
+typedef	struct	_EIT_CONTROL	EIT_CONTROL;
+
 struct	_SVT_CONTROL{
 	SVT_CONTROL	*next ;
 	SVT_CONTROL	*prev ;
@@ -11,29 +13,20 @@ struct	_SVT_CONTROL{
 	int		transport_stream_id ;		// TransporrtStreamID
 	int		service_id ;				// ServiceID
 	char	service_name[MAXSECLEN] ;	// サービス名
+	EIT_CONTROL	*eit;					// EIT テーブル
+	char	haveeitschedule;			// EITスケジュールがあるか。
 };
 
-typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 struct	_EIT_CONTROL{
 	EIT_CONTROL	*next ;
 	EIT_CONTROL	*prev ;
 	int		table_id ;
-	int		servid ;
+	int		service_id ;
 	int		event_id ;			// イベントID
 	int		content_type ;		// コンテントタイプ
-    int		yy;
-    int		mm;
-    int		dd;
-    int		hh;
-    int		hm;
-	int		ss;
-	int		dhh;
-	int		dhm;
-	int		dss;
-	int		ehh;
-	int		emm;
-	int		ess;
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
+	int	duration;				// 時間
+	time_t	start_time;			// 開始時刻
 };
 #endif

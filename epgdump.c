@@ -32,150 +32,110 @@ void	xmlspecialchars(char *str)
 	strrep(str, ">", "&gt;");
 }
 
-void	GetSDT(FILE *infile, SVT_CONTROL *svttop, SECcache *secs, int count)
+void	GetEITSDTInfo(FILE *infile, SECcache *secs, int count)
 {
 	SECcache  *bsecs;
+	SVT_CONTROL *svtcur;
+	int pid;
 
 	while((bsecs = readTS(infile, secs, count)) != NULL) {
-		/* SDT */
-		if((bsecs->pid & 0xFF) == 0x11) {
-			dumpSDT(bsecs->buf, svttop);
+		pid = bsecs->pid & 0xFF;
+		switch (pid) {
+			case 0x11: // SDT
+				dumpSDT(bsecs->buf, svttop);
+				svtcur = svttop->next;
+				while(svtcur) {
+					if (svtcur->eit == NULL) {
+						svtcur->eit = calloc(1, sizeof(EIT_CONTROL));
+					}
+					svtcur = svtcur->next;
+				}
+				break;
+			case 0x12: // EIT
+			case 0x26: // EIT(地デジ)
+			case 0x27: // EIT(地デジ)
+				dumpEIT(bsecs->buf, svttop);
+				break;
 		}
 	}
 }
 
-void	GetStation(STATION **station, int * station_count, char *header)
+void	dumpXML(FILE *outfile, char *header)
 {
-	SVT_CONTROL	*svtcur;
-	STATION * pStation = *station;
-	char sid[80];
-	int stationi = *station_count;
-
-	svtcur = svttop->next;
-	while(svtcur != NULL) {
-		sprintf(sid, "%s_%d", header, svtcur->service_id);
-		pStation = realloc(pStation, (stationi + 1) * sizeof(STATION));
-		memset(&pStation[stationi], 0, sizeof(STATION));
-
-		pStation[stationi].name = malloc( strlen(svtcur->service_name) + 1 );
-		pStation[stationi].ontv = malloc( strlen(sid) + 1 );
-		pStation[stationi].tsId = svtcur->transport_stream_id;
-		pStation[stationi].onId = svtcur->original_network_id;
-		pStation[stationi].svId = svtcur->service_id;
-		pStation[stationi].tpnm = getTP(svtcur->transport_stream_id);
-		strcpy(pStation[stationi].name, svtcur->service_name);
-		strcpy(pStation[stationi].ontv, sid);
-
-		stationi++;
-		svtcur = svtcur->next;
-	}
-	*station = pStation;
-	*station_count = stationi;
-}
-
-void	GetEIT(FILE *infile, FILE *outfile, STATION *psta, SECcache *secs, int count)
-{
-	SECcache  *bsecs;
+	SVT_CONTROL	*svtcur ;
 	EIT_CONTROL	*eitcur ;
-	EIT_CONTROL	*eitnext ;
-	EIT_CONTROL	*eittop = NULL;
-	time_t	l_time ;
-	time_t	end_time ;
-	struct	tm	tl ;
-	struct	tm	*endtl ;
 	char	cendtime[32];
 	char	cstarttime[32];
 
-	eittop = calloc(1, sizeof(EIT_CONTROL));
-	eitcur = eittop ;
-	fseek(infile, 0, SEEK_SET);
-	while((bsecs = readTS(infile, secs, SECCOUNT)) != NULL) {
-		/* EIT */
-		if((bsecs->pid & 0xFF) == 0x12) {
-			dumpEIT(bsecs->buf, psta->svId, psta->onId, psta->tsId, eittop);
-		}else if((bsecs->pid & 0xFF) == 0x26) {
-			dumpEIT(bsecs->buf, psta->svId, psta->onId, psta->tsId, eittop);
-		}else if((bsecs->pid & 0xFF) == 0x27) {
-			dumpEIT(bsecs->buf, psta->svId, psta->onId, psta->tsId, eittop);
+	fprintf(outfile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	fprintf(outfile, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
+	fprintf(outfile, "<tv generator-info-name=\"tsEPG2xml\" generator-info-url=\"http://localhost/\">\n");
+
+	svtcur = svttop->next;
+	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
 		}
+		memset(ServiceName, '\0', sizeof(ServiceName));
+		strcpy(ServiceName, svtcur->service_name);
+		xmlspecialchars(ServiceName);
+
+		fprintf(outfile, "  <channel id=\"%s_%d\" tp=\"%s\">\n", (svtcur->original_network_id < 0x10) ? header : "GR", svtcur->service_id, (svtcur->original_network_id < 0x10) ? getTP(svtcur->transport_stream_id) : header);
+		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
+		fprintf(outfile, "    <transport_stream_id>%d</transport_stream_id>\n", svtcur->transport_stream_id);
+		fprintf(outfile, "    <original_network_id>%d</original_network_id>\n", svtcur->original_network_id);
+		fprintf(outfile, "    <service_id>%d</service_id>\n", svtcur->service_id);
+		fprintf(outfile, "  </channel>\n");
+		svtcur = svtcur->next;
 	}
-	eitcur = eittop ;
-	while(eitcur != NULL){
-		if(!eitcur->servid){
-			eitcur = eitcur->next ;
-			continue ;
-		}
-		if(eitcur->content_type > CAT_COUNT){
-			eitcur->content_type = CAT_COUNT -1 ;
-		}
-		memset(title, '\0', sizeof(title));
-		strcpy(title, eitcur->title);
-		xmlspecialchars(title);
 
-		memset(subtitle, '\0', sizeof(subtitle));
-		strcpy(subtitle, eitcur->subtitle);
-		xmlspecialchars(subtitle);
-
-		memset(Category, '\0', sizeof(Category));
-		strcpy(Category, ContentCatList[eitcur->content_type].japanese);
-		xmlspecialchars(Category);
-
-		tl.tm_sec = eitcur->ss ;
-		tl.tm_min = eitcur->hm ;
-		tl.tm_hour = eitcur->hh ;
-		tl.tm_mday = eitcur->dd ;
-		tl.tm_mon = (eitcur->mm - 1);
-		tl.tm_year = (eitcur->yy - 1900);
-		tl.tm_wday = 0;
-		tl.tm_isdst = 0;
-		tl.tm_yday = 0;
-		l_time = mktime(&tl);
-		if((eitcur->ehh == 0) && (eitcur->emm == 0) && (eitcur->ess == 0)){
-			(void)time(&l_time);
-			end_time = l_time + (60 * 5);		// ５分後に設定
-		endtl = localtime(&end_time);
-		}else{
-			end_time = l_time + eitcur->ehh * 3600 + eitcur->emm * 60 + eitcur->ess;
-			endtl = localtime(&end_time);
+	svtcur = svttop->next;
+	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
 		}
-		memset(cendtime, '\0', sizeof(cendtime));
-		memset(cstarttime, '\0', sizeof(cstarttime));
-		strftime(cendtime, (sizeof(cendtime) - 1), "%Y%m%d%H%M%S", endtl);
-		strftime(cstarttime, (sizeof(cstarttime) - 1), "%Y%m%d%H%M%S", &tl);
-#if 1
-		fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s\">\n",	
-				cstarttime, cendtime, psta->ontv);
-		fprintf(outfile, "    <title lang=\"ja_JP\">%s</title>\n", title);
-		fprintf(outfile, "    <desc lang=\"ja_JP\">%s</desc>\n", subtitle);
-		fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n", Category);
-		fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[eitcur->content_type].english);
-		fprintf(outfile, "  </programme>\n");
-#else
-		fprintf(outfile, "(%x:%x:%x)%s,%s,%s,%s,%s,%s\n",
-					eitcur->servid, eitcur->table_id, eitcur->event_id,
-					cstarttime, cendtime,
-					title, subtitle,
-					Category,
-					ContentCatList[eitcur->content_type].english);
-#endif
-#if 0
-		fprintf(outfile, "(%x:%x)%04d/%02d/%02d,%02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,%s\n",
-					eitcur->table_id, eitcur->event_id,
-					eitcur->yy, eitcur->mm, eitcur->dd,
-					eitcur->hh, eitcur->hm, eitcur->ss,
-					eitcur->ehh, eitcur->emm, eitcur->ess,
-					eitcur->title, eitcur->subtitle,
-					ContentCatList[eitcur->content_type].japanese,
-					ContentCatList[eitcur->content_type].english);
-#endif
-		eitnext = eitcur->next ;
-		free(eitcur->title);
-		free(eitcur->subtitle);
-		free(eitcur);
-		eitcur = eitnext ;
+		eitcur = svtcur->eit;
+		while(eitcur != NULL){
+			if(!eitcur->service_id){
+				eitcur = eitcur->next ;
+				continue ;
+			}
+			if(eitcur->content_type > CAT_COUNT){
+				eitcur->content_type = CAT_COUNT -1 ;
+			}
+
+			memset(title, '\0', sizeof(title));
+			strcpy(title, eitcur->title);
+			xmlspecialchars(title);
+
+			memset(subtitle, '\0', sizeof(subtitle));
+			strcpy(subtitle, eitcur->subtitle);
+			xmlspecialchars(subtitle);
+
+			memset(Category, '\0', sizeof(Category));
+			strcpy(Category, ContentCatList[eitcur->content_type].japanese);
+			xmlspecialchars(Category);
+
+			memset(cendtime, '\0', sizeof(cendtime));
+			memset(cstarttime, '\0', sizeof(cstarttime));
+			strcpy(cendtime, strTime(eitcur->start_time + eitcur->duration , "%Y%m%d%H%M%S"));
+			strcpy(cstarttime, strTime(eitcur->start_time, "%Y%m%d%H%M%S"));
+
+			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\" event_id=\"%d\">\n",
+					cstarttime, cendtime, (svtcur->original_network_id < 0x10) ? header : "GR", svtcur->service_id, eitcur->event_id);
+			fprintf(outfile, "    <title lang=\"ja_JP\">%s</title>\n", title);
+			fprintf(outfile, "    <desc lang=\"ja_JP\">%s</desc>\n", subtitle);
+			fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n", Category);
+			fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[eitcur->content_type].english);
+			fprintf(outfile, "  </programme>\n");
+			eitcur = eitcur->next;
+		}
+		svtcur = svtcur->next;
 	}
-	free(eittop);
-	eittop = NULL;
+
+	fprintf(outfile, "</tv>\n");
 }
 
 int main(int argc, char *argv[])
@@ -188,8 +148,6 @@ int main(int argc, char *argv[])
 	int   inclose = 0;
 	int   outclose = 0;
 	SECcache   secs[SECCOUNT];
-	int		lp ;
-	STATION	*pStas ;
 	char	*ontvheader ;
 
 	if(argc == 4){
@@ -225,7 +183,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	pStas = NULL;
 	staCount = 0;
 	svttop = calloc(1, sizeof(SVT_CONTROL));
 
@@ -236,35 +193,15 @@ int main(int argc, char *argv[])
 	secs[2].pid = 0x12;
 	secs[3].pid = 0x26;
 	secs[4].pid = 0x27;
-	GetSDT(infile, svttop, secs, SECCOUNT);
+	GetEITSDTInfo(infile, secs, SECCOUNT);
 	if(strcmp(arg_onTV, "/BS") == 0){
 		ontvheader = "BS";
 	}else if(strcmp(arg_onTV, "/CS") == 0){
 		ontvheader = "CS";
 	}else{
-		ontvheader = "GR";
+		ontvheader = arg_onTV;
 	}
-	GetStation(&pStas, &staCount, ontvheader);
-
-	fprintf(outfile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	fprintf(outfile, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
-	fprintf(outfile, "<tv generator-info-name=\"tsEPG2xml\" generator-info-url=\"http://localhost/\">\n");
-	for(lp = 0 ; lp < staCount ; lp++){
-		memset(ServiceName, '\0', sizeof(ServiceName));
-		strcpy(ServiceName, pStas[lp].name);
-		xmlspecialchars(ServiceName);
-
-		fprintf(outfile, "  <channel id=\"%s\" tp=\"%s\">\n", pStas[lp].ontv, (strcmp(ontvheader, "GR") == 0) ? arg_onTV : pStas[lp].tpnm);
-		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
-		fprintf(outfile, "    <transport_stream_id>%d</transport_stream_id>\n", pStas[lp].tsId);
-		fprintf(outfile, "    <original_network_id>%d</original_network_id>\n", pStas[lp].onId);
-		fprintf(outfile, "    <service_id>%d</service_id>\n", pStas[lp].svId);
-		fprintf(outfile, "  </channel>\n");
-	}
-	for(lp = 0 ; lp < staCount ; lp++){
-		GetEIT(infile, outfile, &pStas[lp], secs, SECCOUNT);
-	}
-	fprintf(outfile, "</tv>\n");
+	dumpXML(outfile, ontvheader);
 
 	if(inclose) {
 		fclose(infile);

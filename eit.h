@@ -27,21 +27,11 @@ typedef struct _EIThead {
 
 typedef struct _EITbody {
 	int event_id;
-	char start_time[5];
+	unsigned char start_time[5];
 	unsigned char duration[3];
 	int running_status;
 	int free_CA_mode;
 	int descriptors_loop_length;
-	/* 以下は解析結果保存用 */
-	int yy;
-	int mm;
-	int dd;
-	int hh;
-	int hm;
-	int ss;
-	int dhh;
-	int dhm;
-	int dss;
 } EITbody;
 
 typedef struct _SEVTdesc {
@@ -111,7 +101,7 @@ extern "C"{
 	int parseEEVTDitem(unsigned char *data, EEVTDitem *desc) ;
 	int parseEEVTDtail(unsigned char *data, EEVTDtail *desc) ;
 
-	void dumpEIT(unsigned char *data, int serv_id, int original_network_id, int transport_stream_id, EIT_CONTROL *eittop);
+	void dumpEIT(unsigned char *data, SVT_CONTROL *svttop);
 
 #ifdef __cplusplus
 }

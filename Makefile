@@ -5,7 +5,7 @@ HEDDERDEPEND	= eit.h sdt.h aribstr.h ts.h util.h
 
 LANG=C
 CC		= gcc
-CFLAGS		=  -std=c99 -O2 -Wall -g -Werror -Wno-return-type $(RECPT1)
+CFLAGS		=  -std=c99 -O2 -Wall -g -Wno-return-type $(RECPT1)
 #LDFLAGS		= -pthread
 LIBS		=
 

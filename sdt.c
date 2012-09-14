@@ -47,7 +47,7 @@ int parseSDTbody(unsigned char *data, SDTbody *b) {
 
 int parseSVCdesc(unsigned char *data, SVCdesc *desc) {
 	int boff = 0;
-  
+
 	memset(desc, 0, sizeof(SVCdesc));
 
 	desc->descriptor_tag = getBit(data, &boff, 8);
@@ -60,16 +60,17 @@ int parseSVCdesc(unsigned char *data, SVCdesc *desc) {
 
 	return desc->descriptor_length + 2;
 }
-int		serachid(SVT_CONTROL *top, int service_id)
+
+SVT_CONTROL	*serach_sdt(SVT_CONTROL *top, int service_id)
 {
 	SVT_CONTROL	*cur = top ;
 	while(cur != NULL){
 		if(cur->service_id == service_id){
-			return 1 ;
+			return cur ;
 		}
 		cur = cur->next ;
 	}
-	return 0 ;
+	return NULL ;
 }
 
 void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)
@@ -100,17 +101,14 @@ void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)
 		cur = cur->next ;
 	}
 	return ;
-
 }
 
 void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 {
-
 	SDThead  sdth;
 	SDTbody  sdtb;
 	SVCdesc  desc;
 	SVT_CONTROL	*svtptr ;
-	int		rc ;
 
 	int len = 0;
 	int loop_len = 0;
@@ -125,8 +123,10 @@ void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 		loop_len -= len;
 		parseSVCdesc(ptr, &desc);
 
-		rc = serachid(top, sdtb.service_id);
-		if(rc == 0){
+		svtptr = serach_sdt(top, sdtb.service_id);
+		if(svtptr != NULL){
+			memcpy(svtptr->service_name, desc.service_name, strlen(desc.service_name));
+		} else {
 			svtptr = calloc(1, sizeof(SVT_CONTROL));
 			svtptr->original_network_id = sdth.original_network_id;
 			svtptr->transport_stream_id = sdth.transport_stream_id;
