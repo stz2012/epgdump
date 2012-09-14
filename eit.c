@@ -363,8 +363,9 @@ void dumpEIT(unsigned char *ptr, SVT_CONTROL *top)
 		svtcur->original_network_id = eith.original_network_id;
 		svtcur->service_id = eith.service_id;
 		svtcur->eit = calloc(1, sizeof(EIT_CONTROL));
-		svtcur->haveeitschedule = 1;
 		enqueue_sdt(top, svtcur);
+		if ((eith.table_id >= 0x50) && (!svtcur->haveeitschedule))
+			svtcur->haveeitschedule = 1;
 		eittop = svtcur->eit;
 	}
 #if 0

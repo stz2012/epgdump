@@ -126,6 +126,8 @@ void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 		svtptr = serach_sdt(top, sdtb.service_id);
 		if(svtptr != NULL){
 			memcpy(svtptr->service_name, desc.service_name, strlen(desc.service_name));
+			if (desc.service_type != 1)
+				svtptr->haveeitschedule = 0;
 		} else {
 			svtptr = calloc(1, sizeof(SVT_CONTROL));
 			svtptr->original_network_id = sdth.original_network_id;
